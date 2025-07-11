@@ -1,17 +1,16 @@
 import java.util.*;
 
-// MenuItem class representing individual menu items
 class MenuItem {
-    private String productname;
+    private String name;
     private double price;
 
-    public MenuItem(String productname, double price) {
-        this.productname = productname;
+    public MenuItem(String name, double price) {
+        this.name = name;
         this.price = price;
     }
 
-    public String getProductName() {
-        return productname;
+    public String getName() {
+        return name;
     }
 
     public double getPrice() {
@@ -19,119 +18,137 @@ class MenuItem {
     }
 }
 
-// Customer class representing customer details
 class Customer {
-    private final String orderNumber;
-    private final String name;
+    private String name;
+    private String orderNumber;
 
-    public Customer(String orderNumber, String name) {
-        this.orderNumber = orderNumber;
+    public Customer(String name, String orderNumber) {
         this.name = name;
-    }
-
-    public String getOrderNumber() {
-        return orderNumber;
+        this.orderNumber = orderNumber;
     }
 
     public String getName() {
         return name;
     }
+
+    public String getOrderNumber() {
+        return orderNumber;
+    }
 }
 
-// BillGenerator class to manage orders and generate bills
-class BillGenerator {
-    private List<MenuItem> menuItems = new ArrayList<>();
-    private List<MenuItem> orderedItems = new ArrayList<>();
-    private List<Customer> customers = new ArrayList<>();
+class CafeOrderSystem {
+    private List<MenuItem> menu;
+    private List<MenuItem> currentOrder;
+    private Scanner scanner;
 
-    public BillGenerator() {
-        // Adding some products to the menu
-        menuItems.add(new MenuItem("Hot Coffee: Caffe Americano", 150));
-        menuItems.add(new MenuItem("Hot Coffee: Caffe Mocha", 200));
-        menuItems.add(new MenuItem("Hot Coffee: Cappuccino", 220));
-        menuItems.add(new MenuItem("Hot Coffee: Espresso", 200));
-        menuItems.add(new MenuItem("Cold Coffee: Iced Caffe Mocha", 250));
-        menuItems.add(new MenuItem("Cold Coffee: Iced Cappuccino", 230));
-        menuItems.add(new MenuItem("Cold Coffee: Iced White Mocha", 270));
-        menuItems.add(new MenuItem("Cold Coffee: Iced Caffe Latte", 300));
-        menuItems.add(new MenuItem("Bakery: Almond Butterscotch Cookie", 170));
-        menuItems.add(new MenuItem("Bakery: Red Velvet & Orange Pastery", 200));
-        menuItems.add(new MenuItem("Bakery: Double Chocolate Chip Cookie", 160));
+    public CafeOrderSystem() {
+        menu = new ArrayList<>();
+        currentOrder = new ArrayList<>();
+        scanner = new Scanner(System.in);
+        initializeMenu();
     }
 
-    public void showMenu() {
-        System.out.println("<<<<StarBucks Menu>>>>");
-        for (int i = 0; i < menuItems.size(); i++) {
-            System.out.println((i + 1) + ". " + menuItems.get(i).getProductName() + " - " + menuItems.get(i).getPrice() + " Rs");
+    // Initialize the menu with items
+    private void initializeMenu() {
+        menu.add(new MenuItem("Hot Coffee: Caffe Americano", 150));
+        menu.add(new MenuItem("Hot Coffee: Caffe Mocha", 200));
+        menu.add(new MenuItem("Hot Coffee: Cappuccino", 220));
+        menu.add(new MenuItem("Hot Coffee: Espresso", 200));
+        menu.add(new MenuItem("Cold Coffee: Iced Caffe Mocha", 250));
+        menu.add(new MenuItem("Cold Coffee: Iced Cappuccino", 230));
+        menu.add(new MenuItem("Cold Coffee: Iced White Mocha", 270));
+        menu.add(new MenuItem("Cold Coffee: Iced Caffe Latte", 300));
+        menu.add(new MenuItem("Bakery: Almond Butterscotch Cookie", 170));
+        menu.add(new MenuItem("Bakery: Red Velvet & Orange Pastry", 200));
+        menu.add(new MenuItem("Bakery: Double Chocolate Chip Cookie", 160));
+    }
+
+    // Display the menu
+    public void displayMenu() {
+        System.out.println("\n==== StarBucks Menu ====");
+        for (int i = 0; i < menu.size(); i++) {
+            System.out.println((i + 1) + ". " + menu.get(i).getName() + " - Rs " + menu.get(i).getPrice());
         }
+        System.out.println("========================");
     }
 
+    // Get customer information
+    public Customer getCustomerInfo() {
+        System.out.print("\nEnter your name: ");
+        String name = scanner.nextLine();
+        String orderNumber = "ORD" + (int)(Math.random() * 10000);
+        return new Customer(name, orderNumber);
+    }
+
+    // Take order from customer
     public void takeOrder() {
-        Scanner scanner = new Scanner(System.in);
+        System.out.println("\nPlace your order:");
 
         while (true) {
-            System.out.println("Enter the number of the item you want to order (or 0 to finish): ");
+            System.out.print("Enter item number (1-" + menu.size() + ") or 0 to finish: ");
             int choice = scanner.nextInt();
+
             if (choice == 0) {
                 break;
-            } else if (choice > 0 && choice <= menuItems.size()) {
-                orderedItems.add(menuItems.get(choice - 1));
-                System.out.println("Item added to your order: " + menuItems.get(choice - 1).getProductName());
+            } else if (choice >= 1 && choice <= menu.size()) {
+                MenuItem selectedItem = menu.get(choice - 1);
+                currentOrder.add(selectedItem);
+                System.out.println("Added: " + selectedItem.getName());
             } else {
-                System.out.println("Invalid choice, please try again.");
+                System.out.println("Invalid choice! Please try again.");
             }
         }
     }
 
+    // Calculate total amount
     public double calculateTotal() {
         double total = 0;
-        for (MenuItem item : orderedItems) {
+        for (MenuItem item : currentOrder) {
             total += item.getPrice();
         }
         return total;
     }
 
-    public void addCustomer(Customer customer) {
-        customers.add(customer);
-        System.out.println("Bill for Customer: " + customer.getName());
+    // Generate and display bill
+    public void generateBill(Customer customer) {
+        System.out.println("\n========== BILL ==========");
+        System.out.println("Customer: " + customer.getName());
         System.out.println("Order Number: " + customer.getOrderNumber());
-        double total = calculateTotal();
-        System.out.println("Total Amount:" + total + " Rs");
+        System.out.println("-------------------------");
+
+        if (currentOrder.isEmpty()) {
+            System.out.println("No items ordered.");
+            return;
+        }
+
+        System.out.println("Items Ordered:");
+        for (MenuItem item : currentOrder) {
+            System.out.println("• " + item.getName() + " - Rs " + item.getPrice());
+        }
+
+        System.out.println("-------------------------");
+        System.out.println("Total Amount: Rs " + calculateTotal());
+        System.out.println("==========================");
     }
 
-    public Customer findOrCreateCustomer(String name) {
-        for (Customer customer : customers) {
-            if (customer.getName().equalsIgnoreCase(name)) {
-                return customer;
-            }
-        }
-        Customer newCustomer = new Customer("CUS" + (customers.size() + 1), name);
-        addCustomer(newCustomer);
-        return newCustomer;
+    // Start the ordering process
+    public void startOrdering() {
+        System.out.println("Welcome to StarBucks!");
+        displayMenu();
+
+        Customer customer = getCustomerInfo();
+
+        takeOrder();
+        
+        generateBill(customer);
+
+        System.out.println("\nThank you for your visit! :)");
     }
 }
 
-// Main class to run the application
 public class Cafe {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        BillGenerator billGenerator = new BillGenerator();
-
-        // Show the menu first
-        billGenerator.showMenu();
-
-        // Get customer details
-        System.out.println("Enter your name: ");
-        String name = scanner.nextLine();
-
-        // Customer is created here
-        Customer customer = billGenerator.findOrCreateCustomer(name);
-
-        // Take the order
-        billGenerator.takeOrder();
-
-        // Generate the bill
-        billGenerator.addCustomer(customer);
-        System.out.println("Thank you for your visit. :)");
+        CafeOrderSystem cafeSystem = new CafeOrderSystem();
+        cafeSystem.startOrdering();
     }
 }
